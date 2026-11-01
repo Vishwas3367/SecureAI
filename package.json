@@ -1,0 +1,23 @@
+{
+  "name": "secureai",
+  "private": true,
+  "version": "1.0.0",
+  "description": "AI-Powered IT Incident Intelligence & Security Analytics Platform",
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "concurrently -n api,web -c cyan,magenta \"npm run dev -w backend\" \"npm run dev -w frontend\"",
+    "dev:backend": "npm run dev -w backend",
+    "dev:frontend": "npm run dev -w frontend",
+    "db:up": "docker compose up -d",
+    "db:generate": "npm run prisma:generate -w backend",
+    "db:migrate": "npm run prisma:migrate -w backend",
+    "db:seed": "npm run prisma:seed -w backend",
+    "db:reset": "npm run prisma:reset -w backend"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

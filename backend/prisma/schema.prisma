@@ -1,0 +1,149 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  SECURITY_ANALYST
+  IT_ANALYST
+  EMPLOYEE
+}
+
+enum IncidentStatus {
+  OPEN
+  IN_PROGRESS
+  PENDING
+  RESOLVED
+  CLOSED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum Category {
+  ACCESS
+  APPLICATION
+  NETWORK
+  INFRASTRUCTURE
+  SECURITY
+  HARDWARE
+  EMAIL
+  DATABASE
+  OTHER
+}
+
+enum SecurityRisk {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+model User {
+  id             String     @id @default(cuid())
+  email          String     @unique
+  name           String
+  passwordHash   String
+  role           Role       @default(EMPLOYEE)
+  department     String?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  createdIncidents Incident[] @relation("CreatedBy")
+  assignedIncidents Incident[] @relation("AssignedTo")
+  auditLogs      AuditLog[]
+}
+
+model Incident {
+  id                    String          @id @default(cuid())
+  ticketNumber          String          @unique
+  title                 String
+  description           String
+  category              Category
+  priority              Priority
+  status                IncidentStatus  @default(OPEN)
+
+  createdById           String
+  createdBy             User            @relation("CreatedBy", fields: [createdById], references: [id])
+  assignedToId          String?
+  assignedTo            User?           @relation("AssignedTo", fields: [assignedToId], references: [id])
+
+  aiCategory            Category?
+  aiPriority            Priority?
+  aiConfidence          Float?
+  aiAccepted            Boolean         @default(false)
+
+  riskScore             Int             @default(0)
+  securityRisk          SecurityRisk?
+  potentialIssue        String?
+  affectedService       String?
+  recommendedAction     String?
+
+  rootCause             String?
+  rootCauseConfidence   Float?
+  recommendedResolution String?
+
+  sourceIp              String?
+  sourceGeo             String?
+  affectedAccounts      Int             @default(0)
+  afterHours            Boolean         @default(false)
+
+  slaDueAt              DateTime?
+  resolvedAt            DateTime?
+  resolutionNotes       String?
+
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+
+  riskFactors           RiskFactor[]
+  relatedFrom           IncidentRelation[] @relation("FromIncident")
+  relatedTo             IncidentRelation[] @relation("ToIncident")
+
+  @@index([status])
+  @@index([category])
+  @@index([priority])
+  @@index([createdAt])
+  @@index([securityRisk])
+}
+
+model RiskFactor {
+  id         String   @id @default(cuid())
+  incidentId String
+  incident   Incident @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  label      String
+  points     Int
+}
+
+model IncidentRelation {
+  id             String   @id @default(cuid())
+  fromIncidentId String
+  fromIncident   Incident @relation("FromIncident", fields: [fromIncidentId], references: [id], onDelete: Cascade)
+  toIncidentId   String
+  toIncident     Incident @relation("ToIncident", fields: [toIncidentId], references: [id], onDelete: Cascade)
+
+  @@unique([fromIncidentId, toIncidentId])
+}
+
+model AuditLog {
+  id             String   @id @default(cuid())
+  userId         String?
+  user           User?    @relation(fields: [userId], references: [id])
+  action         String
+  entityType     String
+  entityId       String?
+  previousValue  Json?
+  newValue       Json?
+  ipAddress      String?
+  createdAt      DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([entityType, entityId])
+}

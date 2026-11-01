@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --color-ink: #07111f;
+  --color-panel: #0c1a2e;
+  --color-line: #1d334d;
+  --color-cyan: #3ee0c5;
+  --color-amber: #f5b942;
+  --color-rose: #ff6b7a;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: radial-gradient(1200px 600px at 10% -10%, #123152 0%, transparent 50%),
+    radial-gradient(900px 500px at 100% 0%, #1a2f28 0%, transparent 40%),
+    #07111f;
+  color: #e8f1fb;
+  font-family: var(--font-sans);
+}
+
+.grid-overlay {
+  background-image: linear-gradient(rgba(62, 224, 197, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(62, 224, 197, 0.04) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
